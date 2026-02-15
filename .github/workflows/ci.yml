@@ -1,0 +1,25 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+      - name: Run tests
+        run: go test -v -race -count=1 ./...
+      - name: Build binary
+        run: go build -o boundaryguard .
+      - name: Self-scan (demo)
+        run: ./boundaryguard --dir . --format json
+      - name: Build multi-platform
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o dist/boundaryguard-linux-amd64 .
+          GOOS=darwin GOARCH=arm64 go build -o dist/boundaryguard-darwin-arm64 .
+          GOOS=windows GOARCH=amd64 go build -o dist/boundaryguard-windows-amd64.exe .
